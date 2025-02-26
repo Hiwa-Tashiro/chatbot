@@ -11,8 +11,6 @@ const ChatBot = () => {
     const [isInitialLoading, setIsInitialLoading] = useState(true); // 初期メッセージのローディング状態
     const [userId, setUserId] = useState(uuidv4()); // 新しいユーザーIDを生成
 
-    // 環境変数からバックエンドAPI URLを取得
-    const apiUrl = process.env.REACT_APP_BACKEND_API_URL;
 
     useEffect(() => {
         // 毎回リロードで新しいユーザーIDを生成
@@ -54,7 +52,7 @@ const ChatBot = () => {
 
         try {
             // サーバーとの通信
-            const response = await axios.post(`${apiUrl}/chat`, {
+            const response = await axios.post(`https://y9zs7kouqi.execute-api.ap-northeast-1.amazonaws.com/dev/chatbot`, {
                 message: input,
                 context: messages.map(msg => ({
                     role: msg.role,
@@ -63,12 +61,12 @@ const ChatBot = () => {
                 user_id: userId, // ユーザーIDを送信
             });
 
-            let chatResponse = response.data.reply; // 応答文
+            let chatResponse = response?.data.reply; // 応答文
 
             // デバッグログを表示
-            if (response.data.debug_log) {
+            if (response?.data.debug_log) {
                 console.group("デバッグログ");
-                response.data.debug_log.forEach((log) => console.log(log));
+                response?.data.debug_log.forEach((log) => console.log(log));
                 console.groupEnd();
             }
 
@@ -111,7 +109,7 @@ const ChatBot = () => {
             console.error('エラー:', error.response?.data || error.message);
             setMessages((prev) => [
                 ...prev,
-                { role: 'bot', content: '申し訳ありませんが、エラーが発生しました。' },
+                { role: 'bot', content: error.response?.data.reply || '申し訳ありませんが、エラーが発生しました。' },
             ]);
         } finally {
             setIsLoading(false);
